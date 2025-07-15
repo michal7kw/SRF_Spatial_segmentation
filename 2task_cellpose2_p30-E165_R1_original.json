@@ -48,10 +48,10 @@
               "name": "normalize",
               "parameters": {
                 "type": "CLAHE",
-                "clip_limit": 0.2,
+                "clip_limit": 0.6,
                 "filter_size": [
-                  70,
-                  70
+                  40,
+                  40
                 ]
               }
             }
@@ -64,10 +64,10 @@
               "name": "normalize",
               "parameters": {
                 "type": "CLAHE",
-                "clip_limit": 0.2,
+                "clip_limit": 0.6,
                 "filter_size": [
-                  70,
-                  70
+                  40,
+                  40
                 ]
               }
             }
@@ -77,14 +77,14 @@
       "segmentation_parameters": {
         "nuclear_channel": "DAPI",
         "entity_fill_channel": "all",
-        "diameter": 70,
+        "diameter": 140,
         "flow_threshold": 2.0,
-        "cellprob_threshold": -5.5,
+        "cellprob_threshold": -6.0,
         "minimum_mask_size": 1000
       },
       "polygon_parameters": {
-        "simplification_tol": 2,
-        "smoothing_radius": 8,
+        "simplification_tol": 1,
+        "smoothing_radius": 5,
         "minimum_final_area": 1000
       }
     },
@@ -116,10 +116,10 @@
               "name": "normalize",
               "parameters": {
                 "type": "CLAHE",
-                "clip_limit": 0.2,
+                "clip_limit": 0.1,
                 "filter_size": [
-                  70,
-                  70
+                  30,
+                  30
                 ]
               }
             }
