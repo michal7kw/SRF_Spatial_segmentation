@@ -19,6 +19,7 @@ import seaborn as sns
 
 import scanpy as sc
 import squidpy as sq
+import geopandas as gpd
 
 # %% [markdown]
 # ## 2. Setup
@@ -57,6 +58,23 @@ try:
 except (KeyError, IndexError):
     print("Could not automatically determine library_id. Spatial plots may fail.")
     library_id = None
+
+
+# %% [markdown]
+# ### Load Cell Boundaries
+
+# %%
+# Load the cell boundaries and add them to the anndata object
+try:
+    segmentation_path = data_dir / "cellpose2_mosaic_space.parquet"
+    if segmentation_path.exists():
+        boundaries = gpd.read_parquet(segmentation_path)
+        adata.uns['spatial'][library_id]['segmentations'] = boundaries
+        print("Successfully loaded cell boundaries.")
+    else:
+        print("Cell boundaries file not found.")
+except Exception as e:
+    print(f"Could not load cell boundaries: {e}")
 
 
 # %% [markdown]
@@ -137,11 +155,11 @@ print("Saved UMAP plot.")
 sq.pl.spatial_scatter(
     adata,
     library_id=library_id,
-    shape=None,
     color="leiden",
-    size=0.5,
-    figsize=(10, 10),
-    save="_leiden.png"
+    seg=True,  # Display cell boundaries
+    seg_options={"color": "yellow", "linewidth": 0.5},
+    figsize=(15, 15),
+    save="_leiden_with_boundaries.png"
 )
 # Move the file to the results directory
 if os.path.exists("figures/spatial_leiden.png"):

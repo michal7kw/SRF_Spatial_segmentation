@@ -1,107 +1,82 @@
-# Cell Segmentation Visualization Tool
+# Enhanced Cell Segmentation Visualization Tool
 
-This tool provides comprehensive visualization capabilities for cell segmentation results from the VPT (Vizgen Post-processing Tool) pipeline.
+This document provides an overview of the visualization tools for assessing cell segmentation results from the VPT pipeline.
 
-## Overview
+## Overview and Recommendation
 
-The segmentation pipeline has processed the ROI and detected **56 cells** across **12 tiles**, with the following distribution:
-- **Tile 4**: 49 cells (primary detection area)
-- **Tile 8**: 7 cells (secondary detection area)
-- **Other tiles**: 0 cells each
+The segmentation pipeline has processed the ROI and generated cell boundaries. To visualize these results accurately, we strongly recommend using the **`visualize_segmentation_fixed.py`** script.
 
-## Files Created
+### Why Use the Fixed Script?
+- **It Works**: Solves critical issues where cell boundaries were invisible or misaligned.
+- **Clearer Output**: Creates a comprehensive 3-panel plot (DAPI, PolyT, RGB Overlay) for robust analysis.
+- **High Visibility**: Renders cell boundaries with a thick, vibrant yellow line.
 
-1. **`visualize_segmentation_results.py`** - Full-featured visualization script
-2. **`visualize_segmentation_simple.py`** - Simplified, memory-efficient version
-3. **`test_visualization.py`** - Test script for full version
-4. **`test_simple_visualization.py`** - Test script for simplified version
-5. **`README_visualization.md`** - This documentation file
+Older scripts (`visualize_segmentation_simple.py`, `visualize_segmentation_results.py`) are kept for legacy purposes but are not recommended for use.
+
+## Quick Start
+
+For a fast and reliable visualization of tile 4, run the following command:
+```bash
+python CHECK_RESEGMENTATION_RESULTS/visualize_segmentation_fixed.py --tile-index 4
+```
+The output will be saved as `segmentation_visualizations/tile_4_segmentation.png`.
 
 ## Requirements
 
-The script requires the following Python packages:
+Ensure you have the necessary Python packages installed:
 ```bash
-pip install numpy pandas matplotlib seaborn scikit-image geopandas shapely
+pip install numpy pandas matplotlib scikit-image geopandas shapely
 ```
-
-These should already be available in your `vpt` conda environment.
 
 ## Recommended Usage
 
-**For most users, start with the simplified version:**
+## Recommended Usage with `visualize_segmentation_fixed.py`
 
-### 1. Quick Summary Report
+This script is the new standard for all visualization tasks.
+
+### 1. Generate a Summary Report
+Get a quick overview of cell counts per tile without generating images.
 ```bash
-python visualize_segmentation_simple.py --summary-only
+python CHECK_RESEGMENTATION_RESULTS/visualize_segmentation_fixed.py --summary-only
 ```
 
-### 2. Visualize Tiles with Cells
+### 2. Visualize a Specific Tile
+The most common and recommended command.
 ```bash
-# View tile 4 (contains 49 cells) - automatically saves to ./segmentation_visualizations/
-python visualize_segmentation_simple.py --tile-index 4
-
-# View tile 8 (contains 7 cells) - automatically saves to ./segmentation_visualizations/
-python visualize_segmentation_simple.py --tile-index 8
-
-# View all tiles with cells - saves all to ./segmentation_visualizations/
-python visualize_segmentation_simple.py --all-tiles
+# Visualize tile 4 and save it to the default directory
+python CHECK_RESEGMENTATION_RESULTS/visualize_segmentation_fixed.py --tile-index 4 --save-dir segmentation_visualizations
 ```
 
-### 3. Custom Save Location
+### 3. Visualize All Tiles
+Process all tiles that contain detected cells.
 ```bash
-# Save visualizations to a specific directory
-python visualize_segmentation_simple.py --tile-index 4 --save-dir ./my_output
+python CHECK_RESEGMENTATION_RESULTS/visualize_segmentation_fixed.py --all-tiles --save-dir segmentation_visualizations
 ```
 
-### 4. Interactive Mode
+### 4. Custom Save Location
+Save the output to a specific directory.
 ```bash
-# Interactive selection of tiles
-python visualize_segmentation_simple.py
+python CHECK_RESEGMENTATION_RESULTS/visualize_segmentation_fixed.py --tile-index 4 --save-dir ./my_custom_results
 ```
 
-## Advanced Usage (Full Version)
-
-**Note: The full version may have memory issues with large images. Use the simplified version if you encounter problems.**
-
-### 1. ROI Overview Visualization
-```bash
-python visualize_segmentation_results.py
-```
-This shows the entire ROI with all detected cell boundaries overlaid on DAPI and PolyT channels.
-
-### 2. Custom Channel Visualization
-```bash
-# Visualize with different channels
-python visualize_segmentation_results.py --channels DAPI Pcp4 --z-layer 6
-```
-
-## Command Line Options
-
-### Simplified Version (`visualize_segmentation_simple.py`)
+## Command Line Options (`visualize_segmentation_fixed.py`)
 
 | Option | Description | Default |
-|--------|-------------|---------|
-| `--output-dir` | Directory with segmentation results | `1task_cellpose2_p30-E165_R1_roi_analysis_parallel` |
-| `--data-dir` | Directory with original images | `DATA/p30-E165/R1` |
-| `--tile-index` | Specific tile to visualize | None (interactive mode) |
-| `--channels` | Image channels to display | `DAPI PolyT` |
-| `--z-layer` | Z-layer to visualize | `6` |
-| `--save-dir` | Directory to save images | None (display only) |
-| `--summary-only` | Only show summary report | False |
-| `--all-tiles` | Visualize all tiles with cells | False |
+|---|---|---|
+| `--output-dir`| Directory with segmentation results | `2task_cellpose2_p30-E165_R1_roi_analysis_parallel` |
+| `--tile-index`| Specific tile to visualize | None (interactive mode) |
+| `--save-dir`| Directory to save images | `segmentation_visualizations`|
+| `--summary-only`| Only show summary report | False |
+| `--all-tiles`| Visualize all tiles with cells | False |
+| `--sample-n`| Randomly sample N cells for clarity | None |
 
-### Full Version (`visualize_segmentation_results.py`)
+## Key Visualization Features
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--output-dir` | Directory with segmentation results | `1task_cellpose2_p30-E165_R1_roi_analysis_parallel` |
-| `--data-dir` | Directory with original images | `DATA/p30-E165/R1` |
-| `--roi-coords` | ROI coordinates JSON file | `roi_coords.json` |
-| `--tile-index` | Specific tile to visualize | None (shows ROI overview) |
-| `--channels` | Image channels to display | `DAPI PolyT` |
-| `--z-layer` | Z-layer to visualize | `6` |
-| `--save-dir` | Directory to save images | None (display only) |
-| `--summary-only` | Only show summary report | False |
+The enhanced script provides:
+- **3-Panel Plots**: DAPI, PolyT, and a merged RGB overlay for comprehensive analysis.
+- **Accurate Overlays**: Cell boundaries are correctly transformed and displayed.
+- **High Visibility**: Boundaries are rendered with a thick yellow line.
+- **High Resolution**: Images are saved at 300 DPI for detailed inspection.
 
 ## Visualization Features
 
