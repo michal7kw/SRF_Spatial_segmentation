@@ -4,7 +4,7 @@
 
 # Activate the conda environment
 eval "$(conda shell.bash hook)"
-conda activate vpt-env
+conda activate /beegfs/scratch/ric.sessa/kubacki.michal/conda/envs/vpt
 
 # Call the actual vpt command with all arguments
-/beegfs/scratch/ric.broccoli/kubacki.michal/conda/envs/vpt-env/bin/vpt "$@"
+/beegfs/scratch/ric.sessa/kubacki.michal/conda/envs/vpt/bin/vpt "$@"

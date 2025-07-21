@@ -8,11 +8,8 @@
 #SBATCH --mem=84G
 #SBATCH --time=72:00:00
 #SBATCH --account=kubacki.michal
-#SBATCH --partition=workq
-
-
-# # SBATCH --partition=cuda
-# # SBATCH --gpus=v100:1
+#SBATCH --partition=cuda
+#SBATCH --gpus=v100:1
 
 # This script performs segmentation on a defined Region of Interest (ROI)
 # using a custom model specified in the CONFIG json file.
@@ -20,9 +17,13 @@
 # --- Step 1: Environment Setup ---
 echo "--- Setting up environment ---"
 # export CUDA_VISIBLE_DEVICES=""
-echo "Activating conda environment vpt-env..."
+
+# Initialize conda for the current shell
+echo "Initializing conda..."
 eval "$(conda shell.bash hook)"
-conda activate vpt-env
+
+echo "Activating conda environment vpt..."
+conda activate /beegfs/scratch/ric.sessa/kubacki.michal/conda/envs/vpt
 
 # --- Check CUDA device detection ---
 echo "--- Checking CUDA device detection ---"
@@ -44,14 +45,13 @@ else
     echo "conda command not found or not in PATH."
 fi
 
-PROJ_DIR="/beegfs/scratch/ric.broccoli/kubacki.michal/SRF_Spatial"
+PROJ_DIR="/beegfs/scratch/ric.sessa/kubacki.michal/SRF_Linda/SRF_Spatial_segmentation"
 
 # Add the custom packages directory to the front of PYTHONPATH
 export PYTHONPATH="${PROJ_DIR}/python-packages_v2_original:${PYTHONPATH}"
 
 # Add the current directory to PATH so our local vpt script can be found
 export PATH="${PROJ_DIR}:${PATH}"
-
 # Allow experimental features (needed for multiple outputs)
 export VPT_EXPERIMENTAL="true"
 
@@ -80,8 +80,8 @@ mkdir -p ${ROI_OUTPUT_DIR}
 mkdir -p logs
 
 # # --- Initial cleanup: Remove any leftover temporary directories from previous runs ---
-echo "--- Cleaning up any leftover temporary directories ---"
-rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
+# echo "--- Cleaning up any leftover temporary directories ---"
+# rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
 
 # --- Step 2: Prepare Full Segmentation Specification ---
 echo "--- Step 2: Preparing full segmentation specification ---"
@@ -104,7 +104,7 @@ fi
 
 echo "--- Running vpt prepare-segmentation command ---"
 # Try to run with debug environment variable
-echo "Running with VPT_DEBUG=1 to get more verbose output"
+# echo "Running with VPT_DEBUG=1 to get more verbose output"
 # export VPT_DEBUG=1
 
 # Run vpt command with verbose output
@@ -188,19 +188,19 @@ vpt --processes 12 derive-entity-metadata \
 echo "--- Step 8: Updating VZG file ---"
 
 # Enhanced cleanup: Remove any existing temporary directories
-echo "--- Cleaning up all temporary directories before VZG update ---"
-rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
+# echo "--- Cleaning up all temporary directories before VZG update ---"
+# rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
 
-# Wait a moment to ensure filesystem operations complete
-sleep 2
+# # Wait a moment to ensure filesystem operations complete
+# sleep 2
 
-# Verify cleanup was successful
-if [ -d "${ROI_OUTPUT_DIR}/vzg_build_temp" ]; then
-    echo "Warning: vzg_build_temp directory still exists, attempting forced removal..."
-    chmod -R 777 "${ROI_OUTPUT_DIR}/vzg_build_temp" 2>/dev/null || true
-    rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
-    sleep 1
-fi
+# # Verify cleanup was successful
+# if [ -d "${ROI_OUTPUT_DIR}/vzg_build_temp" ]; then
+#     echo "Warning: vzg_build_temp directory still exists, attempting forced removal..."
+#     chmod -R 777 "${ROI_OUTPUT_DIR}/vzg_build_temp" 2>/dev/null || true
+#     rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
+#     sleep 1
+# fi
 
 echo "--- Starting VZG update ---"
 vpt --processes 4 update-vzg \
