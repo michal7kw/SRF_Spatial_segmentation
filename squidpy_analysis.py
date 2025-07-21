@@ -12,8 +12,8 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import shutil
 import os
-
 from matplotlib import pyplot as plt
 import seaborn as sns
 
@@ -144,7 +144,7 @@ print("Dimensionality reduction and clustering complete.")
 sc.pl.umap(adata, color=["leiden"], size=5, show=False, save="_leiden.png")
 # Move the file to the results directory
 Path("figures/umap_leiden.png").rename(results_dir / "umap_leiden.png")
-os.rmdir("figures")
+shutil.rmtree("figures")
 print("Saved UMAP plot.")
 
 
@@ -156,15 +156,14 @@ sq.pl.spatial_scatter(
     adata,
     library_id=library_id,
     color="leiden",
-    seg=True,  # Display cell boundaries
-    seg_options={"color": "yellow", "linewidth": 0.5},
+    img=False,
     figsize=(15, 15),
     save="_leiden_with_boundaries.png"
 )
 # Move the file to the results directory
 if os.path.exists("figures/spatial_leiden.png"):
     Path("figures/spatial_leiden.png").rename(results_dir / "spatial_scatter_leiden.png")
-    os.rmdir("figures")
+    shutil.rmtree("figures")
     print("Saved spatial scatter plot.")
 else:
     print("Could not save spatial scatter plot.")
@@ -190,8 +189,8 @@ sq.pl.nhood_enrichment(
     figsize=(7, 7),
     save="_enrichment.png",
 )
-Path("figures/nhood_enrichment_enrichment.png").rename(results_dir / "neighborhood_enrichment.png")
-os.rmdir("figures")
+Path("figures/_enrichment.png").rename(results_dir / "neighborhood_enrichment.png")
+shutil.rmtree("figures")
 print("Saved neighborhood enrichment plot.")
 
 # %% [markdown]
@@ -226,3 +225,4 @@ else:
     print("Could not save top spatially autocorrelated genes plot.")
 
 print("\nAnalysis complete. Results are in the 'analysis_results' directory.")
+# %%
