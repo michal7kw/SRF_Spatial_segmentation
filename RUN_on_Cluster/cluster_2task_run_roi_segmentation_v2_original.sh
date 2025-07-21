@@ -8,14 +8,22 @@
 #SBATCH --mem=84G
 #SBATCH --time=72:00:00
 #SBATCH --account=kubacki.michal
-#SBATCH --partition=workq
 #SBATCH --partition=cuda
 #SBATCH --gpus=v100:1
+
+# This script performs segmentation on a defined Region of Interest (ROI)
+# using a custom model specified in the CONFIG json file.
 
 # --- Step 1: Environment Setup ---
 echo "--- Setting up environment ---"
 # export CUDA_VISIBLE_DEVICES=""
-# conda activate vpt-env
+
+# Initialize conda for the current shell
+echo "Initializing conda..."
+eval "$(conda shell.bash hook)"
+
+echo "Activating conda environment vpt..."
+conda activate /beegfs/scratch/ric.sessa/kubacki.michal/conda/envs/vpt
 
 # --- Check CUDA device detection ---
 echo "--- Checking CUDA device detection ---"
@@ -37,11 +45,13 @@ else
     echo "conda command not found or not in PATH."
 fi
 
-PROJ_DIR="/beegfs/scratch/ric.broccoli/kubacki.michal/SRF_Spatial"
+PROJ_DIR="/beegfs/scratch/ric.sessa/kubacki.michal/SRF_Linda/SRF_Spatial_segmentation"
 
 # Add the custom packages directory to the front of PYTHONPATH
 export PYTHONPATH="${PROJ_DIR}/python-packages_v2_original:${PYTHONPATH}"
 
+# Add the current directory to PATH so our local vpt script can be found
+export PATH="${PROJ_DIR}:${PATH}"
 # Allow experimental features (needed for multiple outputs)
 export VPT_EXPERIMENTAL="true"
 
@@ -70,8 +80,8 @@ mkdir -p ${ROI_OUTPUT_DIR}
 mkdir -p logs
 
 # # --- Initial cleanup: Remove any leftover temporary directories from previous runs ---
-echo "--- Cleaning up any leftover temporary directories ---"
-rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
+# echo "--- Cleaning up any leftover temporary directories ---"
+# rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
 
 # --- Step 2: Prepare Full Segmentation Specification ---
 echo "--- Step 2: Preparing full segmentation specification ---"
@@ -80,13 +90,25 @@ echo "DATA_PATH: ${DATA_PATH}"
 echo "REGION: ${REGION}"
 echo "ROI_OUTPUT_DIR: ${ROI_OUTPUT_DIR}"
 
-# Check if config file exists and validate its content
-if [ ! -f "${CONFIG_FILE_PATH}" ]; then
-    echo "ERROR: Config file not found: ${CONFIG_FILE_PATH}"
-    exit 1
+# Check if vpt command exists
+if ! command -v vpt &> /dev/null; then
+    echo "ERROR: vpt command not found. Make sure it's installed and in your PATH."
+    echo "Current PATH: $PATH"
+    echo "Trying to use the local vpt script..."
+    if [ ! -f "${PROJ_DIR}/vpt" ]; then
+        echo "Local vpt script not found at ${PROJ_DIR}/vpt. Exiting."
+        exit 1
+    fi
+    echo "Local vpt script found. Continuing..."
 fi
 
-# --- Step 2: Prepare Full Segmentation Specification ---
+echo "--- Running vpt prepare-segmentation command ---"
+# Try to run with debug environment variable
+# echo "Running with VPT_DEBUG=1 to get more verbose output"
+# export VPT_DEBUG=1
+
+# Run vpt command with verbose output
+set -x  # Enable command tracing
 echo "--- Step 2: Preparing full segmentation specification ---"
 vpt --processes 12 prepare-segmentation \
     --segmentation-algorithm "${CONFIG_FILE_PATH}" \
@@ -97,6 +119,10 @@ vpt --processes 12 prepare-segmentation \
 
 # --- Step 3: Filter Spec and Get Tile Indices for ROI ---
 echo "--- Step 3: Filtering spec and getting tile indices for ROI ---"
+echo "FULL_SPEC_FILE: ${FULL_SPEC_FILE}"
+echo "ROI_COORDS_FILE: ${ROI_COORDS_FILE}"
+echo "ROI_SPEC_FILE: ${ROI_SPEC_FILE}"
+
 ROI_TILE_INDICES=$(python ${ROI_WORKFLOW_DIR}/filter_spec_and_get_indices_v2.py \
     --input-spec "${FULL_SPEC_FILE}" \
     --input-roi "${ROI_COORDS_FILE}" \
@@ -163,22 +189,21 @@ vpt --processes 12 derive-entity-metadata \
     --output-metadata "${ROI_OUTPUT_DIR}/cell_metadata.csv" \
     --overwrite
 
---- Step 8: Update VZG File with ROI Segmentation ---
+# --- Step 8: Update VZG File with ROI Segmentation ---
 echo "--- Step 8: Updating VZG file ---"
 
 # Enhanced cleanup: Remove any existing temporary directories
 # echo "--- Cleaning up all temporary directories before VZG update ---"
-# rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp_v2"
 # rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
 
 # # Wait a moment to ensure filesystem operations complete
 # sleep 2
 
 # # Verify cleanup was successful
-# if [ -d "${ROI_OUTPUT_DIR}/vzg_build_temp_v2" ]; then
-#     echo "Warning: vzg_build_temp_v2 directory still exists, attempting forced removal..."
-#     chmod -R 777 "${ROI_OUTPUT_DIR}/vzg_build_temp_v2" 2>/dev/null || true
-#     rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp_v2"
+# if [ -d "${ROI_OUTPUT_DIR}/vzg_build_temp" ]; then
+#     echo "Warning: vzg_build_temp directory still exists, attempting forced removal..."
+#     chmod -R 777 "${ROI_OUTPUT_DIR}/vzg_build_temp" 2>/dev/null || true
+#     rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
 #     sleep 1
 # fi
 
@@ -189,12 +214,11 @@ vpt --processes 4 update-vzg \
     --input-entity-by-gene "${ROI_OUTPUT_DIR}/cell_by_gene.csv" \
     --input-metadata "${ROI_OUTPUT_DIR}/cell_metadata.csv" \
     --output-vzg "${ROI_OUTPUT_DIR}/${SAMPLE}_roi_resegmented.vzg2" \
-    --temp-path "${ROI_OUTPUT_DIR}/vzg_build_temp_v2" \
+    --temp-path "${ROI_OUTPUT_DIR}/vzg_build_temp" \
     --overwrite
 
 # --- Final cleanup: Remove temporary directories after successful completion ---
-# echo "--- Final cleanup: Removing temporary directories ---"
-# rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp_v2"
-# rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
+echo "--- Final cleanup: Removing temporary directories ---"
+rm -rf "${ROI_OUTPUT_DIR}/vzg_build_temp"
 
 echo "--- ROI segmentation workflow finished successfully! ---"

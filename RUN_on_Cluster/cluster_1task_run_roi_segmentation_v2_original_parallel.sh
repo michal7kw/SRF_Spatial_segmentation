@@ -109,6 +109,7 @@ echo "--- Running vpt prepare-segmentation command ---"
 
 # Run vpt command with verbose output
 set -x  # Enable command tracing
+echo "--- Step 2: Preparing full segmentation specification ---"
 vpt --processes 12 prepare-segmentation \
     --segmentation-algorithm "${CONFIG_FILE_PATH}" \
     --input-images "${DATA_PATH}/${REGION}/images/mosaic_(?P<stain>[\\w|-]+)_z(?P<z>[0-9]+).tif" \
