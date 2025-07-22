@@ -22,7 +22,6 @@ import geopandas as gpd
 # ## 2. Setup
 
 # %%
-# Create a directory to save the results
 os.chdir("/beegfs/scratch/ric.sessa/kubacki.michal/SRF_Linda/SRF_Spatial_segmentation")
 
 # %% [markdown]
@@ -30,6 +29,7 @@ os.chdir("/beegfs/scratch/ric.sessa/kubacki.michal/SRF_Linda/SRF_Spatial_segment
 
 # %%
 data_dir = "./DATA/p0-p7/R1"
+# Create a directory to save the results
 results_dir = os.path.join(data_dir, "analysis_results")
 os.makedirs(results_dir, exist_ok=True)
 
