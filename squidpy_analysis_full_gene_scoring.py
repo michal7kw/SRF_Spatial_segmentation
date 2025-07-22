@@ -417,15 +417,28 @@ def plot_grid_scores(grid_scores, grid_size=(40, 40), save_dir=None):
     n_rows = (n_sets + n_cols - 1) // n_cols
     
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(5 * n_cols, 4 * n_rows))
+    
+    # Handle different cases for axes indexing
     if n_sets == 1:
-        axes = [axes]
+        axes = [axes]  # Single subplot case
     elif n_rows == 1:
-        axes = axes.reshape(1, -1)
+        # Single row case - axes is already a 1D array
+        pass
+    else:
+        # Multiple rows case - axes is already a 2D array
+        pass
     
     for idx, (set_name, data) in enumerate(grid_scores.items()):
         row = idx // n_cols
         col = idx % n_cols
-        ax = axes[row, col] if n_rows > 1 else axes[col]
+        
+        # Get the correct axis based on the layout
+        if n_sets == 1:
+            ax = axes[0]
+        elif n_rows == 1:
+            ax = axes[col]
+        else:
+            ax = axes[row, col]
         
         # Reshape scores to grid
         score_grid = data['scores'].reshape(grid_size)
@@ -443,7 +456,14 @@ def plot_grid_scores(grid_scores, grid_size=(40, 40), save_dir=None):
     for idx in range(n_sets, n_rows * n_cols):
         row = idx // n_cols
         col = idx % n_cols
-        ax = axes[row, col] if n_rows > 1 else axes[col]
+        
+        # Get the correct axis for hiding
+        if n_sets == 1:
+            continue  # No empty subplots in single plot case
+        elif n_rows == 1:
+            ax = axes[col]
+        else:
+            ax = axes[row, col]
         ax.set_visible(False)
     
     plt.tight_layout()
