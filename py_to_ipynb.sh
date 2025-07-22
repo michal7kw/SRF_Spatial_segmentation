@@ -14,3 +14,5 @@
 # jupytext --to  notebook combined_DEG_analysis_from_raw.py
 
 jupytext --to  notebook squidpy_analysis.py
+jupytext --to  notebook squidpy_analysis_full.py
+jupytext --to  notebook squidpy_analysis_full_gene_scoring.py

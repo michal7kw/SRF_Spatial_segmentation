@@ -209,14 +209,11 @@ sq.pl.spatial_scatter(
     cmap="Reds",
     img=False,
     figsize=(10, 10),
-    save="_top_autocorr.png"
+    save="spatial_top_autocorr.png"
 )
-if os.path.exists("figures/spatial_top_autocorr.png"):
-    Path("figures/spatial_top_autocorr.png").rename(f"{results_dir}/spatial_top_autocorr.png")
-    os.rmdir("figures")
-    print("Saved top spatially autocorrelated genes plot.")
-else:
-    print("Could not save top spatially autocorrelated genes plot.")
+Path("./figures/spatial_top_autocorr.png").rename(f"{results_dir}/spatial_top_autocorr.png")
+os.rmdir("figures")
+print("Saved top spatially autocorrelated genes plot.")
 
 # %% [markdown]
 # ## 8. Gene Set Scoring on Spatial Grid
