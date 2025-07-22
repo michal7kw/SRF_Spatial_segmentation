@@ -1,0 +1,55 @@
+{
+    "microns_per_pixel": 0.108,
+    "mosaic_width_pixels": 48551,
+    "mosaic_height_pixels": 39268,
+    "bbox_microns": [
+        8421.756000000001,
+        5198.596,
+        13665.156,
+        9439.4
+    ],
+    "hor_num_tiles_box": 26,
+    "vert_num_tiles_box": 21,
+    "mosaic_files": [
+        {
+            "stain": "Pcp4",
+            "z": 0,
+            "file_name": "mosaic_Pcp4_z0.tif"
+        },
+        {
+            "stain": "Prox1",
+            "z": 0,
+            "file_name": "mosaic_Prox1_z0.tif"
+        },
+        {
+            "stain": "Snap25",
+            "z": 0,
+            "file_name": "mosaic_Snap25_z0.tif"
+        },
+        {
+            "stain": "hSETBP1",
+            "z": 0,
+            "file_name": "mosaic_hSETBP1_z0.tif"
+        },
+        {
+            "stain": "TAG",
+            "z": 0,
+            "file_name": "mosaic_TAG_z0.tif"
+        },
+        {
+            "stain": "Ttr",
+            "z": 0,
+            "file_name": "mosaic_Ttr_z0.tif"
+        },
+        {
+            "stain": "PolyT",
+            "z": 0,
+            "file_name": "mosaic_PolyT_z0.tif"
+        },
+        {
+            "stain": "DAPI",
+            "z": 0,
+            "file_name": "mosaic_DAPI_z0.tif"
+        }
+    ]
+}

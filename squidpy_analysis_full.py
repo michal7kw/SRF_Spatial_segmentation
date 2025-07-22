@@ -24,17 +24,16 @@ import geopandas as gpd
 # %%
 # Create a directory to save the results
 os.chdir("/beegfs/scratch/ric.sessa/kubacki.michal/SRF_Linda/SRF_Spatial_segmentation")
-results_dir = Path("./analysis_results")
-os.makedirs(results_dir, exist_ok=True)
+
 # %% [markdown]
 # ## 3. Load Data
-#
-# We load the data using `squidpy.read.vizgen`. We provide the path to the data
-# directory and specify the counts and metadata files.
 
 # %%
-data_dir = Path("./2task_cellpose2_p30-E165_R1_roi_analysis_parallel")
+data_dir = "./DATA/p0-p7/R1"
+results_dir = os.path.join(data_dir, "analysis_results")
+os.makedirs(results_dir, exist_ok=True)
 
+# %%
 adata = sq.read.vizgen(
     path=data_dir,
     counts_file="cell_by_gene.csv",
@@ -63,13 +62,10 @@ except (KeyError, IndexError):
 # %%
 # Load the cell boundaries and add them to the anndata object
 try:
-    segmentation_path = data_dir / "cellpose2_mosaic_space.parquet"
-    if segmentation_path.exists():
-        boundaries = gpd.read_parquet(segmentation_path)
-        adata.uns['spatial'][library_id]['segmentations'] = boundaries
-        print("Successfully loaded cell boundaries.")
-    else:
-        print("Cell boundaries file not found.")
+    segmentation_path = os.path.join(data_dir, "cell_boundaries.parquet")
+    boundaries = gpd.read_parquet(segmentation_path)
+    adata.uns['spatial'][library_id]['segmentations'] = boundaries
+    print("Successfully loaded cell boundaries.")
 except Exception as e:
     print(f"Could not load cell boundaries: {e}")
 
@@ -93,7 +89,7 @@ axs[2].set_title("Transcripts per FOV")
 sns.histplot(adata.obs["volume"], kde=False, ax=axs[3])
 axs[3].set_title("Volume of segmented cells")
 fig.tight_layout()
-plt.savefig(results_dir / "qc_metrics_distribution.png")
+plt.savefig(os.path.join(results_dir, "qc_metrics_distribution.png"))
 print("Saved QC metrics distribution plot.")
 
 
@@ -102,7 +98,6 @@ print("Saved QC metrics distribution plot.")
 
 # %%
 # Filter cells with low expression and genes that are expressed in too few cells.
-# These are example values, they might need adjustment based on the plots above.
 print(f"Number of cells before filtering: {adata.n_obs}")
 sc.pp.filter_cells(adata, min_counts=50)
 print(f"Number of cells after filtering by counts: {adata.n_obs}")
@@ -138,9 +133,9 @@ print("Dimensionality reduction and clustering complete.")
 # ### UMAP
 
 # %%
-sc.pl.umap(adata, color=["leiden"], size=5, show=False, save="_leiden.png")
+sc.pl.umap(adata, color=["leiden"], size=10, show=False, save="_leiden.png")
 # Move the file to the results directory
-Path("figures/umap_leiden.png").rename(results_dir / "umap_leiden.png")
+Path("figures/umap_leiden.png").rename(f"{results_dir}/umap_leiden.png")
 shutil.rmtree("figures")
 print("Saved UMAP plot.")
 
@@ -155,11 +150,12 @@ sq.pl.spatial_scatter(
     color="leiden",
     img=False,
     figsize=(15, 15),
-    save="_leiden_with_boundaries.png"
+    size=10,
+    save="spatial_leiden.png"
 )
 # Move the file to the results directory
 if os.path.exists("figures/spatial_leiden.png"):
-    Path("figures/spatial_leiden.png").rename(results_dir / "spatial_scatter_leiden.png")
+    Path("figures/spatial_leiden.png").rename(f"{results_dir}/spatial_leiden.png")
     shutil.rmtree("figures")
     print("Saved spatial scatter plot.")
 else:
@@ -167,11 +163,11 @@ else:
 
 # %% [markdown]
 # ## 7. Spatial Analysis
-# We can investigate the spatial organization of the clustered cells.
+# Spatial organization of the clustered cells.
 
 # %% [markdown]
 # ### Neighborhood Enrichment
-# This test identifies clusters that are spatially co-enriched.
+# Clusters that are spatially co-enriched.
 
 # %%
 sq.gr.spatial_neighbors(adata, coord_type="generic", spatial_key="spatial")
@@ -186,7 +182,7 @@ sq.pl.nhood_enrichment(
     figsize=(7, 7),
     save="_enrichment.png",
 )
-Path("figures/_enrichment.png").rename(results_dir / "neighborhood_enrichment.png")
+Path("figures/_enrichment.png").rename(f"{results_dir}/neighborhood_enrichment.png")
 shutil.rmtree("figures")
 print("Saved neighborhood enrichment plot.")
 
@@ -215,7 +211,7 @@ sq.pl.spatial_scatter(
     save="_top_autocorr.png"
 )
 if os.path.exists("figures/spatial_top_autocorr.png"):
-    Path("figures/spatial_top_autocorr.png").rename(results_dir / "spatial_top_autocorr.png")
+    Path("figures/spatial_top_autocorr.png").rename(f"{results_dir}/spatial_top_autocorr.png")
     os.rmdir("figures")
     print("Saved top spatially autocorrelated genes plot.")
 else:
