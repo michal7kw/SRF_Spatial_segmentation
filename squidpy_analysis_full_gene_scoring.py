@@ -225,43 +225,65 @@ print("Saved top spatially autocorrelated genes plot.")
 def parse_gene_lists(file_path: str) -> Dict[str, List[str]]:
     """
     Parse gene lists from CSV file.
-    Expected format: gene_set_name,gene1,gene2,gene3,...
+    Expected format: First row contains gene set names as headers,
+    followed by genes in columns below each header.
     """
+    import pandas as pd
+    
     gene_sets = {}
     
-    with open(file_path, 'r') as f:
-        content = f.read().strip()
-    
-    # Split by gene set names (assuming they end with comma and start new line or continue)
-    # The format appears to be: SetName,gene1,gene2,...SetName2,gene1,gene2,...
-    
-    # Find all gene set names (capitalized words followed by comma)
-    gene_set_pattern = r'([A-Z][a-zA-Z\s_]+?)(?=,)'
-    matches = list(re.finditer(gene_set_pattern, content))
-    
-    if not matches:
-        # Fallback: treat as single gene set
-        genes = [gene.strip() for gene in content.split(',') if gene.strip()]
-        gene_sets['All_genes'] = genes
-        return gene_sets
-    
-    for i, match in enumerate(matches):
-        set_name = match.group(1).strip()
-        start_pos = match.end() + 1  # Skip the comma
+    try:
+        # Read the CSV file using pandas
+        df = pd.read_csv(file_path)
         
-        # Find end position (next gene set or end of string)
-        if i + 1 < len(matches):
-            end_pos = matches[i + 1].start()
-        else:
-            end_pos = len(content)
+        # Get column names (gene set names)
+        gene_set_names = df.columns.tolist()
         
-        # Extract genes for this set
-        gene_string = content[start_pos:end_pos]
-        genes = [gene.strip() for gene in gene_string.split(',') if gene.strip()]
+        # Extract genes for each gene set
+        for col_name in gene_set_names:
+            # Get all non-null values from this column
+            genes = df[col_name].dropna().tolist()
+            
+            # Clean gene names (remove any whitespace)
+            genes = [str(gene).strip() for gene in genes if str(gene).strip()]
+            
+            # Clean gene set name for use as key
+            clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', col_name)
+            gene_sets[clean_name] = genes
+            
+    except Exception as e:
+        print(f"Error reading CSV file: {e}")
+        print("Attempting manual parsing...")
         
-        # Clean gene set name
-        clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', set_name)
-        gene_sets[clean_name] = genes
+        # Fallback to manual parsing
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+        
+        if not lines:
+            return gene_sets
+        
+        # First line should contain gene set names
+        header_line = lines[0].strip()
+        gene_set_names = [name.strip() for name in header_line.split(',')]
+        
+        # Initialize gene lists
+        for name in gene_set_names:
+            clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', name)
+            gene_sets[clean_name] = []
+        
+        # Process remaining lines
+        for line in lines[1:]:
+            line = line.strip()
+            if not line:
+                continue
+                
+            genes_in_line = [gene.strip() for gene in line.split(',')]
+            
+            # Add genes to corresponding gene sets
+            for i, gene in enumerate(genes_in_line):
+                if gene and i < len(gene_set_names):
+                    clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', gene_set_names[i])
+                    gene_sets[clean_name].append(gene)
     
     return gene_sets
 
