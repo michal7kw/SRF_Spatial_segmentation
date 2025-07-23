@@ -206,3 +206,81 @@ else:
 print("\nAnalysis complete. Results are in the 'analysis_results' directory.")
 
 
+
+# %%
+# Save the AnnData object, but first remove GeoDataFrame from spatial metadata
+# as it cannot be serialized to HDF5 format
+print("Preparing to save AnnData object...")
+
+# Store the boundaries separately if they exist
+boundaries_to_save = None
+if library_id and 'segmentations' in adata.uns['spatial'][library_id]:
+    boundaries_to_save = adata.uns['spatial'][library_id]['segmentations']
+    # Remove the GeoDataFrame from spatial metadata before saving
+    del adata.uns['spatial'][library_id]['segmentations']
+    print("Removed GeoDataFrame from spatial metadata for HDF5 compatibility.")
+
+# Save the AnnData object
+adata.write(os.path.join(results_dir, "squidpy_adata_1.h5ad"))
+print("Successfully saved AnnData object.")
+
+# Save the boundaries separately as parquet file
+if boundaries_to_save is not None:
+    boundaries_path = os.path.join(results_dir, "cell_boundaries.parquet")
+    boundaries_to_save.to_parquet(boundaries_path)
+    print(f"Saved cell boundaries separately to: {boundaries_path}")
+    
+    # Restore the boundaries to the AnnData object for continued use in this session
+    adata.uns['spatial'][library_id]['segmentations'] = boundaries_to_save
+    print("Restored boundaries to AnnData object for current session.")
+
+# %% [markdown]
+# ## 8. Loading Saved Data Back
+#
+# This section demonstrates how to load the saved AnnData object and cell boundaries back into memory.
+
+# %%
+# Example: How to load the saved data back
+print("=" * 50)
+print("EXAMPLE: Loading saved data back")
+print("=" * 50)
+
+# Load the AnnData object
+print("Loading AnnData object...")
+adata_loaded = sc.read_h5ad(os.path.join(results_dir, "squidpy_adata_1.h5ad"))
+print(f"Loaded AnnData object: {adata_loaded}")
+
+# Get the library_id from the loaded data
+try:
+    library_id_loaded = list(adata_loaded.uns['spatial'].keys())[0]
+    print(f"Library ID: {library_id_loaded}")
+except (KeyError, IndexError):
+    print("No spatial information found in loaded data.")
+    library_id_loaded = None
+
+# Load the cell boundaries back
+boundaries_path = os.path.join(results_dir, "cell_boundaries.parquet")
+if os.path.exists(boundaries_path):
+    print("Loading cell boundaries...")
+    boundaries_loaded = gpd.read_parquet(boundaries_path)
+    print(f"Loaded boundaries: {boundaries_loaded.shape[0]} cells")
+    
+    # Add the boundaries back to the spatial metadata
+    if library_id_loaded:
+        adata_loaded.uns['spatial'][library_id_loaded]['segmentations'] = boundaries_loaded
+        print("Successfully restored cell boundaries to AnnData object.")
+    
+    # Verify the boundaries are properly loaded
+    print(f"Boundaries columns: {list(boundaries_loaded.columns)}")
+    print(f"Boundaries geometry type: {boundaries_loaded.geometry.geom_type.iloc[0]}")
+else:
+    print(f"Cell boundaries file not found at: {boundaries_path}")
+
+print("\nData loading complete! The loaded AnnData object now contains:")
+print(f"- {adata_loaded.n_obs} cells")
+print(f"- {adata_loaded.n_vars} genes")
+print(f"- Spatial information: {'Yes' if 'spatial' in adata_loaded.uns else 'No'}")
+if library_id_loaded and 'segmentations' in adata_loaded.uns['spatial'][library_id_loaded]:
+    print(f"- Cell boundaries: Yes ({adata_loaded.uns['spatial'][library_id_loaded]['segmentations'].shape[0]} cells)")
+else:
+    print("- Cell boundaries: No")
