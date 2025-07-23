@@ -46,8 +46,12 @@ print(adata)
 
 # %%
 # Get the library id from the anndata object
-library_id = list(adata.uns['spatial'].keys())[0]
-print(f"Using library_id: {library_id}")
+try:
+    library_id = list(adata.uns['spatial'].keys())[0]
+    print(f"Using library_id: {library_id}")
+except (KeyError, IndexError):
+    print("Could not automatically determine library_id. Spatial plots may fail.")
+    library_id = None
 
 # %% [markdown]
 # ### Load Cell Boundaries
@@ -194,18 +198,13 @@ sq.pl.spatial_scatter(
     cmap="Reds",
     img=False,
     figsize=(10, 10),
-    save="_top_autocorr.png"
+    save="spatial_top_autocorr.png"
 )
-if os.path.exists("figures/spatial_top_autocorr.png"):
-    Path("figures/spatial_top_autocorr.png").rename(f"{results_dir}/spatial_top_autocorr.png")
-    os.rmdir("figures")
-    print("Saved top spatially autocorrelated genes plot.")
-else:
-    print("Could not save top spatially autocorrelated genes plot.")
+Path("./figures/spatial_top_autocorr.png").rename(f"{results_dir}/spatial_top_autocorr.png")
+os.rmdir("figures")
+print("Saved top spatially autocorrelated genes plot.")
 
 print("\nAnalysis complete. Results are in the 'analysis_results' directory.")
-
-
 
 # %%
 # Save the AnnData object, but first remove GeoDataFrame from spatial metadata
