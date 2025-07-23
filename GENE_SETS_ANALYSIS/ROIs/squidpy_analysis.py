@@ -1,7 +1,6 @@
 # %% [markdown]
 # # Squidpy analysis of Vizgen data
 
-
 # %% [markdown]
 # ## 1. Imports
 
@@ -42,37 +41,27 @@ adata = sq.read.vizgen(
 print("Data loaded:")
 print(adata)
 
-
 # %% [markdown]
 # ### Get Library ID
 
 # %%
 # Get the library id from the anndata object
-try:
-    library_id = list(adata.uns['spatial'].keys())[0]
-    print(f"Using library_id: {library_id}")
-except (KeyError, IndexError):
-    print("Could not automatically determine library_id. Spatial plots may fail.")
-    library_id = None
-
+library_id = list(adata.uns['spatial'].keys())[0]
+print(f"Using library_id: {library_id}")
 
 # %% [markdown]
 # ### Load Cell Boundaries
 
 # %%
 # Load the cell boundaries and add them to the anndata object
-try:
-    segmentation_path = os.path.join(data_dir,"cellpose2_mosaic_space.parquet")
-    boundaries = gpd.read_parquet(segmentation_path)
-    adata.uns['spatial'][library_id]['segmentations'] = boundaries
-    print("Successfully loaded cell boundaries.")
-except Exception as e:
-    print(f"Could not load cell boundaries: {e}")
-
+segmentation_path = os.path.join(data_dir, "cellpose2_mosaic_space.parquet")
+boundaries = gpd.read_parquet(segmentation_path)
+adata.uns['spatial'][library_id]['segmentations'] = boundaries
+print("Successfully loaded cell boundaries.")
 
 # %% [markdown]
 # ## 4. Pre-processing and QC
-#
+# 
 # We perform standard pre-processing and quality control steps.
 
 # %%
@@ -92,7 +81,6 @@ fig.tight_layout()
 plt.savefig(os.path.join(results_dir, "qc_metrics_distribution.png"))
 print("Saved QC metrics distribution plot.")
 
-
 # %% [markdown]
 # ### Filtering
 
@@ -105,7 +93,6 @@ print(f"Number of cells after filtering by counts: {adata.n_obs}")
 print(f"Number of genes before filtering: {adata.n_vars}")
 sc.pp.filter_genes(adata, min_cells=10)
 print(f"Number of genes after filtering by cells: {adata.n_vars}")
-
 
 # %% [markdown]
 # ### Normalization and Scaling
@@ -138,7 +125,6 @@ sc.pl.umap(adata, color=["leiden"], size=10, show=False, save="_leiden.png")
 Path("figures/umap_leiden.png").rename(f"{results_dir}/umap_leiden.png")
 shutil.rmtree("figures")
 print("Saved UMAP plot.")
-
 
 # %% [markdown]
 # ### Spatial Scatter
@@ -218,4 +204,5 @@ else:
     print("Could not save top spatially autocorrelated genes plot.")
 
 print("\nAnalysis complete. Results are in the 'analysis_results' directory.")
-# %%
+
+
