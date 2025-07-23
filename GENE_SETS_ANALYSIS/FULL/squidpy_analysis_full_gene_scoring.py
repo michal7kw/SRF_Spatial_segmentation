@@ -43,7 +43,6 @@ adata = sq.read.vizgen(
 print("Data loaded:")
 print(adata)
 
-
 # %% [markdown]
 # ### Get Library ID
 
@@ -55,7 +54,6 @@ try:
 except (KeyError, IndexError):
     print("Could not automatically determine library_id. Spatial plots may fail.")
     library_id = None
-
 
 # %% [markdown]
 # ### Load Cell Boundaries
@@ -70,10 +68,9 @@ try:
 except Exception as e:
     print(f"Could not load cell boundaries: {e}")
 
-
 # %% [markdown]
 # ## 4. Pre-processing and QC
-#
+# 
 # We perform standard pre-processing and quality control steps.
 
 # %%
@@ -93,7 +90,6 @@ fig.tight_layout()
 plt.savefig(os.path.join(results_dir, "qc_metrics_distribution.png"))
 print("Saved QC metrics distribution plot.")
 
-
 # %% [markdown]
 # ### Filtering
 
@@ -106,7 +102,6 @@ print(f"Number of cells after filtering by counts: {adata.n_obs}")
 print(f"Number of genes before filtering: {adata.n_vars}")
 sc.pp.filter_genes(adata, min_cells=10)
 print(f"Number of genes after filtering by cells: {adata.n_vars}")
-
 
 # %% [markdown]
 # ### Normalization and Scaling
@@ -139,7 +134,6 @@ sc.pl.umap(adata, color=["leiden"], size=10, show=False, save="_leiden.png")
 Path("figures/umap_leiden.png").rename(f"{results_dir}/umap_leiden.png")
 shutil.rmtree("figures")
 print("Saved UMAP plot.")
-
 
 # %% [markdown]
 # ### Spatial Scatter
@@ -232,58 +226,23 @@ def parse_gene_lists(file_path: str) -> Dict[str, List[str]]:
     
     gene_sets = {}
     
-    try:
-        # Read the CSV file using pandas
-        df = pd.read_csv(file_path)
+    # Read the CSV file using pandas
+    df = pd.read_csv(file_path)
+    
+    # Get column names (gene set names)
+    gene_set_names = df.columns.tolist()
+    
+    # Extract genes for each gene set
+    for col_name in gene_set_names:
+        # Get all non-null values from this column
+        genes = df[col_name].dropna().tolist()
         
-        # Get column names (gene set names)
-        gene_set_names = df.columns.tolist()
+        # Clean gene names (remove any whitespace)
+        genes = [str(gene).strip() for gene in genes if str(gene).strip()]
         
-        # Extract genes for each gene set
-        for col_name in gene_set_names:
-            # Get all non-null values from this column
-            genes = df[col_name].dropna().tolist()
-            
-            # Clean gene names (remove any whitespace)
-            genes = [str(gene).strip() for gene in genes if str(gene).strip()]
-            
-            # Clean gene set name for use as key
-            clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', col_name)
-            gene_sets[clean_name] = genes
-            
-    except Exception as e:
-        print(f"Error reading CSV file: {e}")
-        print("Attempting manual parsing...")
-        
-        # Fallback to manual parsing
-        with open(file_path, 'r') as f:
-            lines = f.readlines()
-        
-        if not lines:
-            return gene_sets
-        
-        # First line should contain gene set names
-        header_line = lines[0].strip()
-        gene_set_names = [name.strip() for name in header_line.split(',')]
-        
-        # Initialize gene lists
-        for name in gene_set_names:
-            clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', name)
-            gene_sets[clean_name] = []
-        
-        # Process remaining lines
-        for line in lines[1:]:
-            line = line.strip()
-            if not line:
-                continue
-                
-            genes_in_line = [gene.strip() for gene in line.split(',')]
-            
-            # Add genes to corresponding gene sets
-            for i, gene in enumerate(genes_in_line):
-                if gene and i < len(gene_set_names):
-                    clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', gene_set_names[i])
-                    gene_sets[clean_name].append(gene)
+        # Clean gene set name for use as key
+        clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', col_name)
+        gene_sets[clean_name] = genes
     
     return gene_sets
 
@@ -523,4 +482,4 @@ print("- spatial_gene_set_scores.png: Heatmap visualization")
 print("- grid_scores_*.csv: Individual gene set scores per grid cell")
 print("- gene_set_scoring_summary.csv: Summary statistics")
 
-# %%
+

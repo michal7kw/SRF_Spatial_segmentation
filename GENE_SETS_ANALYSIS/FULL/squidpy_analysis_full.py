@@ -1,7 +1,6 @@
 # %% [markdown]
 # # Squidpy analysis of Vizgen data
 
-
 # %% [markdown]
 # ## 1. Imports
 
@@ -42,7 +41,6 @@ adata = sq.read.vizgen(
 print("Data loaded:")
 print(adata)
 
-
 # %% [markdown]
 # ### Get Library ID
 
@@ -54,7 +52,6 @@ try:
 except (KeyError, IndexError):
     print("Could not automatically determine library_id. Spatial plots may fail.")
     library_id = None
-
 
 # %% [markdown]
 # ### Load Cell Boundaries
@@ -69,10 +66,9 @@ try:
 except Exception as e:
     print(f"Could not load cell boundaries: {e}")
 
-
 # %% [markdown]
 # ## 4. Pre-processing and QC
-#
+# 
 # We perform standard pre-processing and quality control steps.
 
 # %%
@@ -92,7 +88,6 @@ fig.tight_layout()
 plt.savefig(os.path.join(results_dir, "qc_metrics_distribution.png"))
 print("Saved QC metrics distribution plot.")
 
-
 # %% [markdown]
 # ### Filtering
 
@@ -105,7 +100,6 @@ print(f"Number of cells after filtering by counts: {adata.n_obs}")
 print(f"Number of genes before filtering: {adata.n_vars}")
 sc.pp.filter_genes(adata, min_cells=10)
 print(f"Number of genes after filtering by cells: {adata.n_vars}")
-
 
 # %% [markdown]
 # ### Normalization and Scaling
@@ -138,7 +132,6 @@ sc.pl.umap(adata, color=["leiden"], size=10, show=False, save="_leiden.png")
 Path("figures/umap_leiden.png").rename(f"{results_dir}/umap_leiden.png")
 shutil.rmtree("figures")
 print("Saved UMAP plot.")
-
 
 # %% [markdown]
 # ### Spatial Scatter
@@ -218,4 +211,5 @@ else:
     print("Could not save top spatially autocorrelated genes plot.")
 
 print("\nAnalysis complete. Results are in the 'analysis_results' directory.")
-# %%
+
+
