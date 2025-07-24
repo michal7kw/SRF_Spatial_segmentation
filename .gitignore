@@ -9,3 +9,6 @@ DATA/**/*
 Archive/
 logs/
 **/__pycache__/
+DATA_INTEGRATION/p30_R4_tangram_integrated.csv
+DATA_INTEGRATION/p30_R4_tangram_integrated.h5ad
+DOCs/NotSync

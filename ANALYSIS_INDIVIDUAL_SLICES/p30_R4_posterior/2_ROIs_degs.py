@@ -1,5 +1,5 @@
 # %% [markdown]
-# # MERSCOPE Region R3 Analysis
+# # MERSCOPE Region R4 Analysis
 
 # %%
 # Import necessary libraries
@@ -8,35 +8,29 @@ import os
 import scanpy as sc
 import anndata as ad
 import pandas as pd
-import geopandas as gpd
+import geopandas as gpd # For .parquet file with geometries
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+import matplotlib.image as mpimg # For displaying images
 import seaborn as sns
+import squidpy
 import warnings
 from shapely import wkt
 import numpy as np
 
-# Add the project root to the Python path
-# script_dir = os.path.dirname(__file__)
-script_dir = "E:/Githubs/STF_Spatial_analysis/nb_p0-E7"
-project_root = os.path.abspath(os.path.join(script_dir, '..'))
+project_root = "/beegfs/scratch/ric.sessa/kubacki.michal/SRF_Linda/SRF_Spatial_segmentation"
 sys.path.append(project_root)
-
-from helpers.plotting import create_volcano_plot
+from HELPERs.plotting import create_volcano_plot
 
 # Suppress FutureWarning messages
 warnings.filterwarnings('ignore', category=FutureWarning)
 
-# Set plotting style
-# plt.style.use('seaborn-v0_8-whitegrid')
-# sc.settings.set_figure_params(dpi=100, frameon=True, figsize=(6, 6), facecolor='white')
+# %%
+os.chdir(project_root)
+
+base_path = 'DATA/p0-p7/R4'
+h5ad_file = os.path.join(base_path, 'data.h5ad')
 
 # %%
-# Define file paths
-GROUP = "p0-p7"
-REGION = "R4"
-base_path = f'../DATA/{GROUP}/{REGION}'
-h5ad_file = os.path.join(base_path, 'data.h5ad')
 roi_csv_file_name = 'p0_R4_ROI_28-05-25_17-01_geometry.csv'
 roi_geometry_file_path = os.path.join(base_path, roi_csv_file_name)
 summary_image_file = os.path.join(base_path, 'summary.png')

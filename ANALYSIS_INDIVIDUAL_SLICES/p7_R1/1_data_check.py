@@ -1,9 +1,6 @@
 # %% [markdown]
 # # MERSCOPE Analysis
 
-# %% [markdown]
-# This notebook performs an analysis of MERSCOPE data for region R2, focusing on data loading, exploratory data analysis (EDA), and visualization.
-
 # %%
 # Import necessary libraries
 import scanpy as sc
@@ -30,8 +27,6 @@ h5ad_file = os.path.join(base_path, 'data.h5ad')
 
 # %% [markdown]
 # ## 1. Data Loading
-# 
-# We will prioritize loading the AnnData file (`.h5ad`) as it should contain the most comprehensive data. If needed, we will supplement with other files.
 
 # %%
 cell_by_gene_file = os.path.join(base_path, 'cell_by_gene.csv')

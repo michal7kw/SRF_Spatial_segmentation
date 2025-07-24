@@ -36,7 +36,7 @@ os.makedirs(results_dir, exist_ok=True)
 
 # %% [markdown]
 # ## Loading Saved Data Back
-#
+# 
 # Load the saved AnnData object and cell boundaries back into memory.
 
 # %%
