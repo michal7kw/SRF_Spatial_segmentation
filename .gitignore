@@ -12,3 +12,9 @@ logs/
 DATA_INTEGRATION/p30_R4_tangram_integrated.csv
 DATA_INTEGRATION/p30_R4_tangram_integrated.h5ad
 DOCs/NotSync
+vzg_build_temp/
+tmp/
+**tmp/
+DATA_INTEGRATION/temp
+*.lock
+*.vzg
